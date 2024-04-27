@@ -3,7 +3,7 @@
 ## Assignment
  
 
-1. Create Dockerfile that uses https://github.com/rwightman/pytorch-image-modelsLinks to an external site.
+1. Create Dockerfile that uses https://github.com/rwightman/pytorch-image-models
 
 2. Build the image for this
 
