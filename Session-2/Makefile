@@ -28,3 +28,16 @@ test-full: ## Run all tests
 
 train: ## Train the model
 	python src/train.py
+
+CONT_NAME := mlops:session-02
+build: # build docker container
+	@echo !!! building docker container !!!
+	@docker build -t  ${CONT_NAME} .
+
+train:
+	@echo !!! Starting Training !!!
+	@docker run ${CONT_NAME} python3 src/train.py experiment=example.yaml
+
+eval:
+	@echo !!! Starting Evaluation !!!
+	@docker run ${CONT_NAME} python3 src/eval.py
