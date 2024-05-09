@@ -4,10 +4,11 @@
 # python train.py experiment=example
 
 defaults:
-  - override /data: cifar10.yaml
-  - override /model: cifar10.yaml
+  - override /data: cifar10
+  - override /model: cifar10
   - override /callbacks: default
   - override /trainer: default
+  - override /logger: tensorboard
 
 # all parameters below will be merged with parameters from default configurations set above
 # this allows you to overwrite only specified parameters
@@ -24,10 +25,7 @@ trainer:
 model:
   optimizer:
     lr: 0.002
-  net:
-    lin1_size: 128
-    lin2_size: 256
-    lin3_size: 64
+  model: "resnet18"
   compile: false
 
 data:
