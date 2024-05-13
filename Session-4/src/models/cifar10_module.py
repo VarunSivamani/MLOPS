@@ -1,6 +1,8 @@
 from typing import Any, Dict, Tuple
 
 import torch
+import torch.nn.functional as F
+import torchvision.transforms as T
 from lightning import LightningModule
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification.accuracy import Accuracy
@@ -76,6 +78,8 @@ class CIFAR10LitModule(LightningModule):
         # for tracking best so far validation accuracy
         self.val_acc_best = MaxMetric()
 
+        self.predict_transform = T.Normalize((0.4914, 0.4822, 0.4465), (0.247, 0.243, 0.261))
+
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """Perform a forward pass through the model `self.net`.
 
@@ -83,6 +87,19 @@ class CIFAR10LitModule(LightningModule):
         :return: A tensor of logits.
         """
         return self.net(x)
+    
+    @torch.jit.export
+    def forward_jit(self, x: torch.Tensor):
+        with torch.no_grad():
+            # transform the inputs
+            x = x.permute(0, 3, 1, 2).div(255.)
+            x = self.predict_transform(x)
+
+            # forward pass
+            logits = self.net(x)
+            preds = F.softmax(logits, dim=-1)
+            
+        return preds
 
     def on_train_start(self) -> None:
         """Lightning hook that is called when training begins."""
@@ -150,7 +167,7 @@ class CIFAR10LitModule(LightningModule):
         self.log("val/loss", self.val_loss, on_step=False, on_epoch=True, prog_bar=True)
         self.log("val/acc", self.val_acc, on_step=False, on_epoch=True, prog_bar=True)
         self.logger.log_hyperparams(vars(self.hparams), metrics = {"hp_metric": self.val_loss})
-    
+
     def on_validation_epoch_end(self) -> None:
         "Lightning hook that is called when a validation epoch ends."
         acc = self.val_acc.compute()  # get current val acc
